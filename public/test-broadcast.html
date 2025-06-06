@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Pusher Private Channel</title>
+  <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.2/dist/echo.iife.js"></script>
+</head>
+<body>
+  <h1>Testing Laravel Echo + Pusher Private Channel</h1>
+  <pre id="output"></pre>
+
+  <script>
+    const pusherKey = "a86af2a8952b1fefac27";
+    const pusherCluster = "ap2";
+    const userId = 1;
+    const authToken = "4|QRM5kRzxjJs2Y06YskDNOtLf5vvxankoX8sX1Min918f4760"; // Replace with valid token
+    const laravelAppUrl = "http://127.0.0.1:8000"; // Your backend URL
+
+    const output = document.getElementById('output');
+
+    const echo = new window.Echo({
+      broadcaster: 'pusher',
+      key: pusherKey,
+      cluster: pusherCluster,
+      forceTLS: false, // use true if you have HTTPS
+      authEndpoint: `${laravelAppUrl}/broadcasting/auth`,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          Accept: 'application/json',
+        }
+      }
+    });
+
+    const channelName = `salesman-location.${userId}`;
+    const channel = echo.private(channelName);
+
+    // Listen to your event
+    channel.listen('.location.updated', (e) => {
+      output.textContent += `\nReceived location.updated event:\n` + JSON.stringify(e, null, 2);
+      console.log('✅ Received location.updated event:', e);
+    });
+
+    // Debug: Pusher connection events
+    echo.connector.pusher.connection.bind('connected', () => {
+      console.log('Pusher connected');
+      output.textContent += '\n✅ Pusher connected';
+    });
+
+    echo.connector.pusher.connection.bind('error', (err) => {
+      console.error('Pusher connection error:', err);
+      output.textContent += `\n❌ Pusher connection error: ${err.error ? err.error.message : JSON.stringify(err)}`;
+    });
+
+    // Debug: subscription success and error events
+    channel.subscription.bind('pusher:subscription_succeeded', () => {
+      console.log('Subscribed to channel:', channelName);
+      output.textContent += `\n✅ Subscribed to channel: ${channelName}`;
+    });
+
+    channel.subscription.bind('pusher:subscription_error', (status) => {
+      console.error('Subscription error:', status);
+      output.textContent += `\n❌ Subscription error: ${status}`;
+    });
+
+    output.textContent = "👂 Waiting for events on channel: " + channelName + "\n";
+  </script>
+</body>
+</html>
+
