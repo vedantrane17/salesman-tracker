@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\AdminController;
+use App\Models\User;
 
 Route::get('/', function () {
     return view('welcome');
@@ -52,6 +53,19 @@ Route::get('/admin/live-map/{userId}', function ($userId) {
 });
 
 
-Route::get('/admin/tracking-info/{userId}', [AdminController::class, 'trackingInfo']);
-Route::get('/admin/api/session-data/{userId}', [AdminController::class, 'getSessionData']);
+Route::get('/admin/view-live/{sessionId}', [AdminController::class, 'trackingInfo'])->name('view-live');
+Route::get('/admin/api/session-data/{sessionId}', [AdminController::class, 'getSessionData']);
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
+
+    Route::get('/users', function () {
+        $users = User::all();
+        return view('admin.users', compact('users'));
+    })->name('users');
+});
+
+Route::get('/admin/user/{userId}/tracking-summary', [AdminController::class, 'userTrackingSummary'])->name('admin.user.tracking.summary');
 

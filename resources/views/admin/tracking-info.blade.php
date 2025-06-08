@@ -21,7 +21,7 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        const userId = {{ $userId }};
+        const sessionId = {{ $sessionId }};
         const map = L.map('map').setView([0, 0], 15);
         let polyline;
 
@@ -30,7 +30,7 @@
         }).addTo(map);
 
         async function loadSessionData() {
-            const res = await fetch(`/admin/api/session-data/${userId}`);
+            const res = await fetch(`/admin/api/session-data/${sessionId}`);
             const data = await res.json();
 
             document.getElementById('startTime').textContent = data.start_time;

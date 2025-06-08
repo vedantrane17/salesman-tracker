@@ -42,16 +42,15 @@ class AdminController extends Controller
         return view('admin.tracker-map', compact('locations'));
     }
 
-    public function trackingInfo($userId)
+    public function trackingInfo($sessionId)
 {
-    return view('admin.tracking-info', compact('userId'));
+    return view('admin.tracking-info', compact('sessionId'));
 }
 
-public function getSessionData($userId)
+public function getSessionData($sessionId)
 {
     $session = DB::table('tracking_sessions')
-        ->where('user_id', $userId)
-        ->latest()
+        ->where('id', $sessionId)
         ->first();
 
     if (!$session) {
@@ -66,11 +65,11 @@ public function getSessionData($userId)
     // Convert UTC to IST
     $start = Carbon::parse($session->created_at)->setTimezone('Asia/Kolkata');
     $end = $session->end_time ? Carbon::parse($session->end_time)->setTimezone('Asia/Kolkata') : null;
-    $session_id = $session->id;
+    // $session_id = $session->id;
 
     $distance = 0;
     for ($i = 1; $i < count($locations); $i++) {
-        $distance += haversineDistance(
+        $distance += $this->haversineGreatCircleDistance(
             $locations[$i - 1]->latitude,
             $locations[$i - 1]->longitude,
             $locations[$i]->latitude,
@@ -84,7 +83,7 @@ public function getSessionData($userId)
         'duration' => $end ? $start->diff($end)->format('%H:%I:%S') : 'Live',
         'distance_km' => round($distance, 2),
         'locations' => $locations,
-        'id' => $session_id,
+        'id' => $session->id,
     ]);
 }
 
@@ -101,5 +100,63 @@ private function haversineGreatCircleDistance($lat1, $lon1, $lat2, $lon2, $earth
     $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
     return $earthRadius * $c;
 }
+
+public function userTrackingSummary($userId)
+{
+    $user = DB::table('users')->find($userId);
+
+    $sessions = DB::table('tracking_sessions')
+        ->where('user_id', $userId)
+        ->orderByDesc('start_time')
+        ->get()
+        ->map(function ($session) {
+            $locations = DB::table('locations')
+                ->where('tracking_session_id', $session->id)
+                ->orderBy('created_at')
+                ->get();
+
+            $distance = 0;
+            for ($i = 1; $i < count($locations); $i++) {
+                $distance += $this->haversineGreatCircleDistance_1(
+                    $locations[$i - 1]->latitude,
+                    $locations[$i - 1]->longitude,
+                    $locations[$i]->latitude,
+                    $locations[$i]->longitude
+                );
+            }
+
+            $start = \Carbon\Carbon::parse($session->created_at)->setTimezone('Asia/Kolkata');
+            $end = $session->end_time ? \Carbon\Carbon::parse($session->end_time)->setTimezone('Asia/Kolkata') : null;
+            $durationMinutes = $start->diffInMinutes($end);
+
+            return [
+                'id' => $session->id,
+                'date' => $start->format('Y-m-d'),
+                'start_time' => $start->format('H:i:s'),
+                'end_time' => $end ? $end->format('H:i:s') : 'Tracking Ongoing',
+                'duration' => $end ? $start->diff($end)->format('%H:%I:%S') : 'Live',
+                'distance_km' => round($distance, 2),
+                'duration_minutes' => $durationMinutes,
+                'status' => $end ? 'inactive' : 'active',
+            ];
+        });
+
+    return view('admin.user-tracking-summary', compact('user', 'sessions'));
+}
+
+private function haversineGreatCircleDistance_1($lat1, $lon1, $lat2, $lon2, $earthRadius = 6371)
+{
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+
+    $a = sin($dLat / 2) * sin($dLat / 2) +
+         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+         sin($dLon / 2) * sin($dLon / 2);
+
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+    return $earthRadius * $c;
+}
+
 
 }
