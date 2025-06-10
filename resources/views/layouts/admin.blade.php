@@ -50,17 +50,21 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
         <!-- Header -->
-        <header class="bg-white shadow p-4 flex items-center justify-between">
+        <header class="bg-white shadow p-4 relative flex items-center justify-center">
+            <!-- Sidebar Toggle Button -->
             <button @click="sidebarOpen = !sidebarOpen" 
-                    class="p-2 rounded bg-gray-200 hover:bg-gray-300 focus:outline-none">
+                    class="p-2 rounded bg-gray-200 hover:bg-gray-300 focus:outline-none absolute left-4">
                 <!-- Menu Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
+
+            <!-- Centered Title -->
             <h1 class="text-xl font-semibold">@yield('title')</h1>
         </header>
+
 
         <!-- Page Content -->
         <main class="flex-1 overflow-auto p-6">
