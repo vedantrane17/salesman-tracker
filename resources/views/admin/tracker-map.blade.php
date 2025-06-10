@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Live Rider Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.admin')
+
+@section('title', 'Live Tracker')
+
+@section('content')
+    <div class="bg-white rounded shadow p-6">
+        <h2 class="text-2xl font-semibold mb-4">Live Location</h2>
+
+        <div id="map" class="rounded shadow border border-gray-300" style="height: 600px; width: 100%;"></div>
+    </div>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-    <style>
-        #map { height: 600px; width: 100%; }
-    </style>
-</head>
-<body>
-    <h2>Live Rider Location</h2>
-    <div id="map"></div>
 
     <!-- Leaflet + jQuery -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -43,7 +40,7 @@
             }
 
             animationIndex++;
-            setTimeout(animateMarker, 1000); // 1 sec per point
+            setTimeout(animateMarker, 1000); // Animate 1 sec per point
         }
 
         async function fetchPath() {
@@ -67,7 +64,6 @@
         }
 
         fetchPath();
-        setInterval(fetchPath, 10000); // Update every 10s
+        setInterval(fetchPath, 10000); // Refresh every 10 seconds
     </script>
-</body>
-</html>
+@endsection
