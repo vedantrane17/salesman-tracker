@@ -44,14 +44,10 @@
                     <td class="border border-gray-300 px-4 py-2">{{ $session['duration'] }}</td>
                     <td class="border border-gray-300 px-4 py-2">{{ $session['distance_km'] }}</td>
                     <td class="border border-gray-300 px-4 py-2">
-                        @if ($session['status'] === 'active')
-                            <a href="{{ route('view-live', $session['id']) }}" class="text-green-600 font-semibold hover:underline">
-                                Active
+                            <a href="{{ route('view-live', $session['id']) }}" class="font-semibold hover:underline {{ $session['status'] === 'active' ? 'text-green-600' : 'text-red-500' }}">
+                                {{ $session['status'] === 'active' ? 'Active' : 'Inactive' }}
                             </a>
-                        @else
-                            <span class="text-red-500 font-semibold">Inactive</span>
-                        @endif
-                    </td>
+                        </td>
 
                 </tr>
                 @empty
